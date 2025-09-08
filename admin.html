@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page - Liteintel Tees</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <a href="./index.html"><h1 class="logo">Liteintel Tees</h1></a>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="./index.html">Home</a></li>
+                <li><a href="#">Shop</a></li>
+                <li><a href="#">Contact Us</a></li>
+            </ul>
+        </nav>
+        <div class="profile-icon" aria-label="Admin Profile" role="img" tabindex="0">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user" viewBox="0 0 24 24" width="24" height="24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+    </header>
+    <main>
+        <section id="login-section">
+            <h2>Admin Login</h2>
+            <form id="login-form">
+                <label for="admin-password">Password:</label>
+                <input type="password" id="admin-password" required>
+                <button type="button" id="login-btn" class="btn">Login</button>
+            </form>
+        </section>
+        <section id="analytics-section" style="display: none;">
+            <h2>Site Analytics</h2>
+            <div class="analytics-container">
+                <div class="chart-container">
+                    <h3>Visits</h3>
+                    <canvas id="visits-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Sales</h3>
+                    <canvas id="sales-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Items</h3>
+                    <canvas id="items-chart"></canvas>
+                </div>
+            </div>
+            <h2>Existing Products</h2>
+            <div id="existing-products"></div>
+
+            <h2>Add New Product</h2>
+            <form id="add-product-form">
+                <label for="product-name">Product Name:</label>
+                <input type="text" id="product-name" required>
+
+                <label>Sizes:</label>
+                <div class="sizes">
+                    <label><input type="checkbox" value="M"> M</label>
+                    <label><input type="checkbox" value="L"> L</label>
+                    <label><input type="checkbox" value="XL"> XL</label>
+                    <label><input type="checkbox" value="XXL"> XXL</label>
+                </div>
+
+                <label for="product-image">Image:</label>
+                <input type="file" id="product-image" accept="image/*" required>
+
+                <label for="product-price">Price:</label>
+                <input type="number" id="product-price" step="0.01" required>
+
+                <label for="product-quantity">Quantity:</label>
+                <input type="number" id="product-quantity" required>
+
+                <button type="submit" class="btn">Add Product</button>
+            </form>
+        </section>
+    </main>
+    <script src="admin.js"></script>
+</body>
+</html>
