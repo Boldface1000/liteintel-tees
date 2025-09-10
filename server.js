@@ -1,3 +1,6 @@
+
+require('dotenv').config();
+
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -33,18 +36,18 @@ const upload = multer({ storage });
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'customeragent404@gmail.com',
-    pass: process.env.EMAIL_PASS || 'Udumebrayeeferide2'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
 // Twilio setup
-const twilioClient = twilio('ACda1a1f8987f4c8d240ff905059fff15c', '07b38cc24c39885cfcdfac0191a6d388');
-const fromNumber = '+16626743851';
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const fromNumber = process.env.TWILIO_FROM_NUMBER;
 
 // Admin details
-const adminEmail = 'customeragent404@gmail.com';
-const adminPhone = '+2347082335454';
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPhone = process.env.ADMIN_PHONE;
 
 // Function to send email notification
 async function sendEmailNotification(orderId, total) {
