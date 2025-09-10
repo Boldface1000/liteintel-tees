@@ -159,28 +159,65 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Add event listeners to all add to cart buttons
-  const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
-  addToCartButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      const card = e.target.closest('.card');
-      currentProduct = {
-        id: card.getAttribute('data-product-id'),
-        name: card.getAttribute('data-product-name'),
-        price: parseFloat(card.getAttribute('data-product-price')),
-        image: card.getAttribute('data-product-image')
-      };
-      // Populate modal with product info
-      modalProductImage.src = currentProduct.image;
-      modalProductImage.alt = currentProduct.name;
-      modalProductName.textContent = currentProduct.name;
-      modalProductPrice.textContent = '$' + currentProduct.price.toFixed(2);
-      quantityInput.value = 1;
-      // Show modal
-      modal.removeAttribute('hidden');
+  // Function to attach event listeners to add to cart buttons
+  function attachAddToCartListeners() {
+    const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+    addToCartButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const card = e.target.closest('.card');
+        const sizes = JSON.parse(card.getAttribute('data-product-sizes') || '[]');
+        const quantity = parseInt(card.getAttribute('data-product-quantity') || 0);
+        currentProduct = {
+          id: card.getAttribute('data-product-id'),
+          name: card.getAttribute('data-product-name'),
+          price: parseFloat(card.getAttribute('data-product-price')),
+          image: card.getAttribute('data-product-image'),
+          sizes: sizes,
+          quantity: quantity
+        };
+        // Populate modal with product info
+        modalProductImage.src = currentProduct.image;
+        modalProductImage.alt = currentProduct.name;
+        modalProductName.textContent = currentProduct.name;
+        modalProductPrice.textContent = '₦' + currentProduct.price.toFixed(2);
+
+        // Dynamically generate size options
+        const sizeOptionsContainer = document.querySelector('.size-options');
+        sizeOptionsContainer.innerHTML = '';
+        if (sizes.length > 0) {
+          sizes.forEach((size, index) => {
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="radio" name="size" value="${size}" ${index === 0 ? 'checked' : ''} /> ${size}`;
+            sizeOptionsContainer.appendChild(label);
+          });
+        } else {
+          // Default sizes if none
+          sizeOptionsContainer.innerHTML = `
+            <label><input type="radio" name="size" value="M" checked /> M</label>
+            <label><input type="radio" name="size" value="L" /> L</label>
+            <label><input type="radio" name="size" value="XL" /> XL</label>
+            <label><input type="radio" name="size" value="XXL" /> XXL</label>
+          `;
+        }
+
+        // Set quantity max and display available
+        quantityInput.max = quantity;
+        quantityInput.value = 1;
+        const availableQuantityDiv = document.getElementById('available-quantity');
+        availableQuantityDiv.textContent = `Available: ${quantity}`;
+
+        // Show modal
+        modal.removeAttribute('hidden');
+      });
     });
-  });
+  }
+
+  // Make the function globally accessible
+  window.attachAddToCartListeners = attachAddToCartListeners;
+
+  // Attach event listeners to add to cart buttons
+  attachAddToCartListeners();
 
   // Modal event handlers
   if (closeModal) {

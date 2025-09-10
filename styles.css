@@ -138,6 +138,14 @@ header {
   color: #f9733e;
 }
 
+/* Active navbar link style */
+.main-nav a.active {
+  color: #f9733e;
+  font-weight: 700;
+  border-bottom: 2px solid #f9733e;
+  padding-bottom: 2px;
+}
+
 main {
   display: flex;
   flex-direction: column;
@@ -803,12 +811,168 @@ canvas {
   color: white;
 }
 
+.special-offer {
+  width: 100%;
+  background: linear-gradient(135deg, #f9d5e5 0%, #c1d9f9 100%);
+  padding: 3rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.special-offer .container {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem 3rem;
+  max-width: 700px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  color: #333;
+}
+
+.special-offer h2 {
+  color: #f9733e;
+  font-weight: 700;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.special-offer p {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.special-offer h3 {
+  color: #f9733e;
+  font-weight: 700;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.special-offer .btn {
+  background-color: #f9733e;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.special-offer .btn:hover {
+  background-color: #e05a1a;
+}
+
+.naira {
+  font-weight: 700;
+  font-size: 1.5rem;
+  vertical-align: middle;
+}
+
+.unbeatable-prices {
+  width: 100%;
+  background: linear-gradient(135deg, #d5f9d5 0%, #f9f7d5 100%);
+  padding: 3rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.unbeatable-prices .container {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem 3rem;
+  max-width: 700px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  color: #333;
+}
+
+.unbeatable-prices h2 {
+  font-weight: 700;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #111;
+}
+
+.unbeatable-prices p {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.price-features {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.price-feature h3 {
+  color: #f9733e;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.price-feature p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.price-note {
+  font-size: 1rem;
+  color: #666;
+  margin-top: 1rem;
+}
+
+/* Mobile responsive for new sections */
 @media (max-width: 600px) {
-  .whatsapp-btn {
-    bottom: 15px;
-    right: 15px;
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
+  .special-offer,
+  .unbeatable-prices {
+    padding: 2rem 1rem;
+  }
+
+  .special-offer .container,
+  .unbeatable-prices .container {
+    padding: 1.5rem 1.5rem;
+  }
+
+  .special-offer h2,
+  .unbeatable-prices h2 {
+    font-size: 1.5rem;
+  }
+
+  .special-offer h3,
+  .unbeatable-prices h3 {
+    font-size: 1.25rem;
+  }
+
+  .price-features {
+    flex-direction: column;
+    gap: 1rem;
   }
 }
+
+/* Fix for about page text visibility */
+.about-us {
+  background-color: white;
+  color: #333;
+  padding: 2rem 1rem;
+}
+
+.about-us .container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Hero section for About page */
+.hero-about {
+  width: 100%;
+  height: 50vh;
+  background-image: url("https://images.pexels.com/photos/428340/pexels-photo-428340.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
+  background-size: cover;
+  background-position: center;
+  position: relative;
