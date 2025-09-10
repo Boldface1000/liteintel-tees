@@ -139,37 +139,42 @@ app.get('/api/products', (req, res) => {
   });
 });
 
-app.post('/api/products', upload.single('image'), (req, res) => {
-  const { name, price, sizes, quantity } = req.body;
-  const image = req.file ? req.file.filename : null;
+app.post('/api/products', (req, res) => {
+  upload.single('image')(req, res, function (err) {
+    if (err) {
+      console.error('Multer Error:', err);
+      return res.status(500).json({ error: 'File upload error' });
+    }
 
-  // Validate required fields
-  if (!name || !price || !quantity || !image) {
-    // Also check for image because it's required in admin.js
-    return res.status(400).json({ error: 'Name, price, quantity, and image are required' });
-  }
+    const { name, price, sizes, quantity } = req.body;
+    const image = req.file ? req.file.filename : null;
 
-  // Parse the values correctly
-  const parsedPrice = parseFloat(price);
-  const parsedQuantity = parseInt(quantity);
-  const sizesArray = sizes ? sizes.split(',') : [];
-  const sizesJson = JSON.stringify(sizesArray);
+    // Validate required fields
+    if (!name || !price || !quantity || !image) {
+      return res.status(400).json({ error: 'Name, price, quantity, and image are required' });
+    }
 
-  // Check for parsing errors
-  if (isNaN(parsedPrice) || isNaN(parsedQuantity)) {
-    return res.status(400).json({ error: 'Invalid price or quantity' });
-  }
+    // Parse the values correctly
+    const parsedPrice = parseFloat(price);
+    const parsedQuantity = parseInt(quantity);
+    const sizesArray = sizes ? sizes.split(',') : [];
+    const sizesJson = JSON.stringify(sizesArray);
 
-  db.run('INSERT INTO products (name, price, image, sizes, quantity) VALUES (?, ?, ?, ?, ?)',
-    [name, parsedPrice, image, sizesJson, parsedQuantity], function(err) {
-      if (err) {
-        // Log the actual database error to the console for debugging
-        console.error('Database Error:', err.message);
-        res.status(500).json({ error: 'Internal Server Error' });
-      } else {
-        res.json({ id: this.lastID, message: 'Product added' });
-      }
-    });
+    // Check for parsing errors
+    if (isNaN(parsedPrice) || isNaN(parsedQuantity)) {
+      return res.status(400).json({ error: 'Invalid price or quantity' });
+    }
+
+    db.run('INSERT INTO products (name, price, image, sizes, quantity) VALUES (?, ?, ?, ?, ?)',
+      [name, parsedPrice, image, sizesJson, parsedQuantity], function(err) {
+        if (err) {
+          console.error('Database Error:', err.message);
+          res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+          res.json({ id: this.lastID, message: 'Product added' });
+        }
+      });
+  });
 });
 
 // Orders endpoints
