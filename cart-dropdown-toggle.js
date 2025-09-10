@@ -7,7 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const orderItemsContainer = document.querySelector('.order-items');
   const totalPriceElement = document.querySelector('.total-price');
 
+  // Modal elements
+  const modal = document.getElementById('add-to-cart-modal');
+  const closeModal = document.querySelector('.close-modal');
+  const confirmAddToCartBtn = document.getElementById('confirm-add-to-cart');
+  const modalProductImage = document.getElementById('modal-product-image');
+  const modalProductName = document.getElementById('modal-product-name');
+  const modalProductPrice = document.getElementById('modal-product-price');
+  const quantityInput = document.getElementById('quantity');
+
   let cart = [];
+  let currentProduct = null;
 
   function formatPrice(price) {
     return '$' + price.toFixed(2);
@@ -67,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       cartItem.innerHTML = `
         <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"/>
         <div style="flex-grow: 1; margin-left: 1rem;">
-          <div style="color: #4b5563; font-size: 0.875rem;">Size: M</div>
+          <div style="color: #4b5563; font-size: 0.875rem;">Size: ${item.size || 'M'}</div>
           <div style="font-weight: 700; color: #111827;">${item.name}</div>
           <div style="color: #f9733e; font-weight: 700;">${formatPrice(item.price)}</div>
         </div>
@@ -84,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Order summary item
       const orderItem = document.createElement('div');
       orderItem.style = 'display: flex; justify-content: space-between; margin-bottom: 0.5rem;';
-      orderItem.textContent = `${item.name} (M) × ${item.quantity}`;
+      orderItem.textContent = `${item.name} (${item.size || 'M'}) × ${item.quantity}`;
       const priceSpan = document.createElement('span');
       priceSpan.style.color = '#f9733e';
       priceSpan.textContent = formatPrice(item.price * item.quantity);
@@ -125,11 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addToCart(product) {
-    const existingIndex = cart.findIndex(item => item.id === product.id);
+    const existingIndex = cart.findIndex(item => item.id === product.id && item.size === product.size);
     if (existingIndex !== -1) {
-      cart[existingIndex].quantity++;
+      cart[existingIndex].quantity += product.quantity;
     } else {
-      cart.push({...product, quantity: 1});
+      cart.push({...product});
     }
     updateCartCount();
     renderCartItems();
@@ -153,16 +163,70 @@ document.addEventListener('DOMContentLoaded', () => {
   const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
   addToCartButtons.forEach(button => {
     button.addEventListener('click', (e) => {
+      e.preventDefault();
       const card = e.target.closest('.card');
-      const product = {
+      currentProduct = {
         id: card.getAttribute('data-product-id'),
         name: card.getAttribute('data-product-name'),
         price: parseFloat(card.getAttribute('data-product-price')),
         image: card.getAttribute('data-product-image')
       };
-      addToCart(product);
+      // Populate modal with product info
+      modalProductImage.src = currentProduct.image;
+      modalProductImage.alt = currentProduct.name;
+      modalProductName.textContent = currentProduct.name;
+      modalProductPrice.textContent = '$' + currentProduct.price.toFixed(2);
+      quantityInput.value = 1;
+      // Show modal
+      modal.removeAttribute('hidden');
     });
   });
+
+  // Modal event handlers
+  if (closeModal) {
+    closeModal.addEventListener('click', () => {
+      modal.setAttribute('hidden', '');
+      if (!cartDropdown.hasAttribute('hidden')) {
+        cartDropdown.setAttribute('hidden', '');
+      }
+    });
+  }
+
+  if (confirmAddToCartBtn) {
+    confirmAddToCartBtn.addEventListener('click', () => {
+      if (currentProduct) {
+        const selectedSize = document.querySelector('input[name="size"]:checked').value;
+        const selectedQuantity = parseInt(quantityInput.value);
+        const productWithOptions = {
+          ...currentProduct,
+          size: selectedSize,
+          quantity: selectedQuantity
+        };
+        addToCart(productWithOptions);
+        modal.setAttribute('hidden', '');
+      }
+    });
+  }
+
+  // Close modal when clicking outside
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.setAttribute('hidden', '');
+    }
+  });
+
+  // Proceed to Checkout button
+  const proceedCheckoutBtn = document.querySelector('.proceed-checkout-btn');
+  if (proceedCheckoutBtn) {
+    proceedCheckoutBtn.addEventListener('click', () => {
+      if (cart.length > 0) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        window.location.href = 'cart.html';
+      } else {
+        alert('Your cart is empty. Please add items to proceed.');
+      }
+    });
+  }
 
   updateCartCount();
   renderCartItems();
