@@ -183,7 +183,7 @@ async function renderExistingProducts() {
     const productDiv = document.createElement("div");
     productDiv.className = "existing-product";
     productDiv.innerHTML = `
-      <img src="./images/${product.image}" alt="${product.name}" style="width: 100px; height: 100px; object-fit: cover;">
+      <img src="./images/${product.image}" alt="${product.name}" style="width: 300px; height: 300px; object-fit: contain;">
       <div>
         <strong>${product.name}</strong>
         <br>

@@ -12,6 +12,8 @@ async function loadProducts() {
       card.setAttribute('data-product-name', product.name);
       card.setAttribute('data-product-price', product.price);
       card.setAttribute('data-product-image', `./images/${product.image}`);
+      card.setAttribute('data-product-sizes', JSON.stringify(product.sizes || []));
+      card.setAttribute('data-product-quantity', product.quantity || 0);
 
       card.innerHTML = `
         <div class="card-img">
@@ -20,7 +22,7 @@ async function loadProducts() {
         <div class="card-info">
           <strong>${product.name}</strong>
           <br />
-          <b>$${product.price}</b>
+          <b>₦${product.price}</b>
           <br />
           <br />
           <button class="btn add-to-cart-btn">Add to Cart</button>
@@ -29,6 +31,11 @@ async function loadProducts() {
 
       collectionSection.appendChild(card);
     });
+
+    // Attach event listeners to the newly created add to cart buttons
+    if (window.attachAddToCartListeners) {
+      window.attachAddToCartListeners();
+    }
   } catch (error) {
     console.error('Error loading products:', error);
   }

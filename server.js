@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer');
 const twilio = require('twilio');
 
 const app = express();
-const PORT = 3001;
+const PORT = 3000;
 
 // Middleware
 app.use(cors());
@@ -27,11 +27,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Email transporter setup
+// NOTE: Replace the email and password below with environment variables for security.
+// If you have 2FA enabled on your Gmail account, generate an App Password and use it here.
+// See: https://support.google.com/accounts/answer/185833
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'customeragent404@gmail.com',
-    pass: 'Udumebrayeeferide2'
+    user: process.env.EMAIL_USER || 'customeragent404@gmail.com',
+    pass: process.env.EMAIL_PASS || 'Udumebrayeeferide2'
   }
 });
 
@@ -49,7 +52,7 @@ async function sendEmailNotification(orderId, total) {
     from: 'customeragent404@gmail.com',
     to: adminEmail,
     subject: 'New Order Placed',
-    text: `A new order has been placed.\nOrder ID: ${orderId}\nTotal: $${total.toFixed(2)}`
+    text: `A new order has been placed.\nOrder ID: ${orderId}\nTotal: ₦${total.toFixed(2)}`
   };
 
   try {
@@ -64,7 +67,7 @@ async function sendEmailNotification(orderId, total) {
 async function sendSMSNotification(orderId, total) {
   try {
     await twilioClient.messages.create({
-      body: `New order placed. ID: ${orderId}, Total: $${total.toFixed(2)}`,
+      body: `New order placed. ID: ${orderId}, Total: ₦${total.toFixed(2)}`,
       from: fromNumber,
       to: adminPhone
     });
