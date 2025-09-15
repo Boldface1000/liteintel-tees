@@ -49,9 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       email: formData.get('email'),
       phone: formData.get('phone'),
       address: formData.get('address'),
-      city: formData.get('city'),
-      state: formData.get('state'),
-      zip: formData.get('zip')
+      city: formData.get('city')
     };
 
     const cart = JSON.parse(localStorage.getItem('cart')) || [];

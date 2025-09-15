@@ -10,48 +10,107 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   </head>
   <body>
     <header>
-      <a href="./index.html"><h1 class="logo">Liteintel Tees</h1></a>
-      <nav class="main-nav">
+      <a href="./index.html"><h1 class="logo">LiteTees</h1></a>
+      <script src="cart-dropdown-toggle.js" defer></script>
+      <script src="products.js"></script>
+
+      <button
+        class="menu-toggle"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="primary-navigation"
+      >
+        <span class="hamburger"></span>
+      </button>
+      <nav class="main-nav" id="primary-navigation">
         <ul>
           <li><a href="./index.html">Home</a></li>
-          <li><a href="index.html#shop">Shop</a></li>
-          <li><a href="about.html">About Us</a></li>
-          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="./shop.html">Collections</a></li>
+          <li><a href="./branding.html">Branding</a></li>
+          <li><a href="./about.html">About Us</a></li>
+          <li><a href="./contact.html">Contact Us</a></li>
         </ul>
       </nav>
-      <div
-        class="profile-icon"
-        aria-label="Admin Profile"
-        role="img"
-        tabindex="0"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="feather feather-user"
-          viewBox="0 0 24 24"
-          width="24"
-          height="24"
+      <div class="icons">
+        <div
+          class="cart-icon"
+          aria-label="Shopping Cart"
+          role="img"
+          tabindex="0"
         >
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
+          <!-- Simple cart SVG icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="feather feather-shopping-cart"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path
+              d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+            ></path>
+          </svg>
+          <span class="cart-count-badge">0</span>
+        </div>
+      </div>
+      <div
+        class="cart-dropdown"
+        aria-label="Cart Dropdown"
+        role="region"
+        hidden
+      >
+        <button class="x-icon" aria-label="Close Cart Dropdown">&times;</button>
+        <div class="cart-items-container">
+          <!-- Cart items will be dynamically inserted here -->
+        </div>
+        <div
+          class="order-summary"
+          style="padding-top: 1rem; border-top: 1px solid #ddd"
+        >
+          <h3>Order Summary</h3>
+          <div class="order-items"></div>
+          <div class="order-total" style="font-weight: 700; margin-top: 0.5rem">
+            Total: <span class="total-price" style="color: #f9733e">₦0.00</span>
+          </div>
+          <button
+            class="btn proceed-checkout-btn"
+            style="margin-top: 1rem; width: 100%"
+          >
+            <span>Proceed to Checkout</span>
+          </button>
+        </div>
       </div>
     </header>
     <main>
       <section id="login-section">
         <h2>Admin Login</h2>
         <form id="login-form">
+          <label for="admin-email">Email:</label>
+          <input type="email" id="admin-email" required />
           <label for="admin-password">Password:</label>
           <input type="password" id="admin-password" required />
-          <button type="button" id="login-btn" class="btn">Login</button>
+          <button type="button" id="login-btn" class="btn"><span>Login</span></button>
+          <button
+            type="button"
+            id="logout-btn"
+            class="btn"
+            style="display: none"
+          >
+            <span>Logout</span>
+          </button>
         </form>
       </section>
       <section id="analytics-section" style="display: none">
@@ -99,7 +158,7 @@
           <label for="product-quantity">Quantity:</label>
           <input type="number" id="product-quantity" required />
 
-          <button type="submit" class="btn">Add Product</button>
+          <button type="submit" class="btn"><span>Add Product</span></button>
         </form>
 
         <h2>Customer Orders</h2>

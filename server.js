@@ -8,6 +8,26 @@ const cors = require('cors');
 const db = require('./db');
 const nodemailer = require('nodemailer');
 const twilio = require('twilio');
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+// Firebase Auth middleware
+const authenticateToken = async (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.sendStatus(401);
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    res.sendStatus(403);
+  }
+};
 
 const app = express();
 const PORT = 3000;
@@ -50,12 +70,25 @@ const adminEmail = process.env.ADMIN_EMAIL;
 const adminPhone = process.env.ADMIN_PHONE;
 
 // Function to send email notification
-async function sendEmailNotification(orderId, total) {
+async function sendEmailNotification(shippingInfo, items) {
+  // Extract customer details
+  const fullName = shippingInfo.fullName || '';
+  const email = shippingInfo.email || '';
+  const phone = shippingInfo.phone || '';
+  const address = shippingInfo.address || '';
+  const city = shippingInfo.city || '';
+
+  // Build items description string
+  const itemsDescription = items.map(item => `${item.quantity} ${item.name}`).join(', ');
+
+  // Compose message text
+  const messageText = `${phone} placed an order of ${itemsDescription}\nFull Name: ${fullName}\nEmail: ${email}\nPhone: ${phone}\nAddress: ${address}\nCity: ${city}`;
+
   const mailOptions = {
     from: 'customeragent404@gmail.com',
-    to: adminEmail,
+    to: 'customeragent404@gmail.com',
     subject: 'New Order Placed',
-    text: `A new order has been placed.\nOrder ID: ${orderId}\nTotal: ₦${total.toFixed(2)}`
+    text: messageText
   };
 
   try {
@@ -67,10 +100,19 @@ async function sendEmailNotification(orderId, total) {
 }
 
 // Function to send SMS notification
-async function sendSMSNotification(orderId, total) {
+async function sendSMSNotification(shippingInfo, items) {
+  // Extract customer phone
+  const phone = shippingInfo.phone || '';
+
+  // Build items description string
+  const itemsDescription = items.map(item => `${item.quantity} ${item.name}`).join(', ');
+
+  // Compose message text
+  const messageText = `${phone} placed an order of ${itemsDescription}`;
+
   try {
     await twilioClient.messages.create({
-      body: `New order placed. ID: ${orderId}, Total: ₦${total.toFixed(2)}`,
+      body: messageText,
       from: fromNumber,
       to: adminPhone
     });
@@ -81,7 +123,7 @@ async function sendSMSNotification(orderId, total) {
 }
 
 // Analytics endpoints
-app.get('/api/analytics', (req, res) => {
+app.get('/api/analytics', authenticateToken, (req, res) => {
   db.get('SELECT * FROM analytics WHERE id = 1', (err, row) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -92,7 +134,9 @@ app.get('/api/analytics', (req, res) => {
           id: row.id,
           visits: row.visits,
           sales: row.sales,
-          items_sold: row.items_sold
+          items_sold: row.items_sold,
+          link_clicks: row.link_clicks || 0,
+          order_count: row.order_count || 0
         };
         res.json(fixedRow);
       } else {
@@ -123,6 +167,16 @@ app.post('/api/analytics/sale', (req, res) => {
   });
 });
 
+app.post('/api/analytics/link-click', (req, res) => {
+  db.run('UPDATE analytics SET link_clicks = link_clicks + 1 WHERE id = 1', (err) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json({ message: 'Link click logged' });
+    }
+  });
+});
+
 // Products endpoints
 app.get('/api/products', (req, res) => {
   db.all('SELECT * FROM products', (err, rows) => {
@@ -139,41 +193,53 @@ app.get('/api/products', (req, res) => {
   });
 });
 
-app.post('/api/products', (req, res) => {
-  upload.single('image')(req, res, function (err) {
+app.post('/api/products', authenticateToken, upload.single('image'), (req, res) => {
+  const { name, price, sizes, quantity } = req.body;
+  const image = req.file ? req.file.filename : null;
+
+  // Validate required fields
+  if (!name || !price || !quantity || !image) {
+    return res.status(400).json({ error: 'Name, price, quantity, and image are required' });
+  }
+
+  // Parse the values correctly
+  const parsedPrice = parseFloat(price);
+  const parsedQuantity = parseInt(quantity);
+  const sizesArray = sizes ? sizes.split(',') : [];
+  const sizesJson = JSON.stringify(sizesArray);
+
+  // Check for parsing errors
+  if (isNaN(parsedPrice) || isNaN(parsedQuantity)) {
+    return res.status(400).json({ error: 'Invalid price or quantity' });
+  }
+
+  db.run('INSERT INTO products (name, price, image, sizes, quantity) VALUES (?, ?, ?, ?, ?)',
+    [name, parsedPrice, image, sizesJson, parsedQuantity], function(err) {
+      if (err) {
+        console.error('Database Error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+      } else {
+        res.json({ id: this.lastID, message: 'Product added' });
+      }
+    });
+});
+
+app.delete('/api/products/:id', (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({ error: 'Product ID is required' });
+  }
+
+  db.run('DELETE FROM products WHERE id = ?', [id], function(err) {
     if (err) {
-      console.error('Multer Error:', err);
-      return res.status(500).json({ error: 'File upload error' });
+      console.error('Database Error:', err.message);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else if (this.changes === 0) {
+      res.status(404).json({ error: 'Product not found' });
+    } else {
+      res.json({ message: 'Product deleted successfully' });
     }
-
-    const { name, price, sizes, quantity } = req.body;
-    const image = req.file ? req.file.filename : null;
-
-    // Validate required fields
-    if (!name || !price || !quantity || !image) {
-      return res.status(400).json({ error: 'Name, price, quantity, and image are required' });
-    }
-
-    // Parse the values correctly
-    const parsedPrice = parseFloat(price);
-    const parsedQuantity = parseInt(quantity);
-    const sizesArray = sizes ? sizes.split(',') : [];
-    const sizesJson = JSON.stringify(sizesArray);
-
-    // Check for parsing errors
-    if (isNaN(parsedPrice) || isNaN(parsedQuantity)) {
-      return res.status(400).json({ error: 'Invalid price or quantity' });
-    }
-
-    db.run('INSERT INTO products (name, price, image, sizes, quantity) VALUES (?, ?, ?, ?, ?)',
-      [name, parsedPrice, image, sizesJson, parsedQuantity], function(err) {
-        if (err) {
-          console.error('Database Error:', err.message);
-          res.status(500).json({ error: 'Internal Server Error' });
-        } else {
-          res.json({ id: this.lastID, message: 'Product added' });
-        }
-      });
   });
 });
 
@@ -209,13 +275,12 @@ app.post('/api/orders', (req, res) => {
       } else {
         // Log sale analytics
         const itemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
-        db.run('UPDATE analytics SET sales = sales + ?, items_sold = items_sold + ? WHERE id = 1', [total, itemsCount]);
+        db.run('UPDATE analytics SET sales = sales + ?, items_sold = items_sold + ?, order_count = order_count + 1 WHERE id = 1', [total, itemsCount]);
         res.json({ id: this.lastID, message: 'Order placed' });
 
         // Send notifications
-        const orderId = this.lastID;
-        sendEmailNotification(orderId, parseFloat(total));
-        sendSMSNotification(orderId, parseFloat(total));
+        sendEmailNotification(shippingInfo, items);
+        sendSMSNotification(shippingInfo, items);
       }
     });
 });

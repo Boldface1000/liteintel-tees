@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="quantity-btn" data-index="${index}" data-action="decrease" style="background: white; border-radius: 9999px; border: none; width: 32px; height: 32px; font-size: 1.5rem; cursor: pointer;">−</button>
           <div style="min-width: 24px; text-align: center;">${item.quantity}</div>
           <button class="quantity-btn" data-index="${index}" data-action="increase" style="background: white; border-radius: 9999px; border: none; width: 32px; height: 32px; font-size: 1.5rem; cursor: pointer;">+</button>
-          <button class="delete-btn" data-index="${index}" style="background: none; border: none; color: #ef4444; font-size: 1.5rem; cursor: pointer;">🗑️</button>
+          <button class="delete-btn" data-index="${index}">🗑️</button>
         </div>
       `;
 

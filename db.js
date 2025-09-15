@@ -36,18 +36,31 @@ db.serialize(() => {
   `);
 
   // Analytics table (single row for totals)
-  db.run(` 
+  db.run(`
     CREATE TABLE IF NOT EXISTS analytics (
       id INTEGER PRIMARY KEY CHECK (id = 1),
       visits INTEGER DEFAULT 0,
       sales REAL DEFAULT 0,
-      items_sold INTEGER DEFAULT 0
+      items_sold INTEGER DEFAULT 0,
+      link_clicks INTEGER DEFAULT 0,
+      order_count INTEGER DEFAULT 0
     )
   `, (err) => {
     if (err) {
       console.error('Error creating analytics table:', err.message);
     } else {
       console.log('Analytics table created or already exists.');
+      // Add new columns if they don't exist
+      db.run('ALTER TABLE analytics ADD COLUMN link_clicks INTEGER DEFAULT 0', (alterErr) => {
+        if (alterErr && !alterErr.message.includes('duplicate column name')) {
+          console.error('Error adding link_clicks column:', alterErr.message);
+        }
+      });
+      db.run('ALTER TABLE analytics ADD COLUMN order_count INTEGER DEFAULT 0', (alterErr) => {
+        if (alterErr && !alterErr.message.includes('duplicate column name')) {
+          console.error('Error adding order_count column:', alterErr.message);
+        }
+      });
     }
   });
 });
